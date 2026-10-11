@@ -5,7 +5,7 @@ import (
 )
 
 var Task1 = models.Task{
-	ID:        1,
+	ID:        9,
 	Title:     "выучить структуры",
 	Completed: false,
 }

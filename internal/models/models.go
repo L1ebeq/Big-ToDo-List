@@ -1,14 +1,24 @@
 package models
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"os"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Task struct {
-	ID        int
-	Title     string
-	Completed bool
+	ID          int
+	Title       string
+	Completed   bool
+	Description string
+	Priority    string
+	CreatedAt   time.Time
+	DeadLine    time.Time
 }
 
 func AddOneTaks(a Task, b *[]Task) {
@@ -16,33 +26,52 @@ func AddOneTaks(a Task, b *[]Task) {
 	*b = append(*b, a)
 }
 
-func ListTasks(s []Task) {
+func ListTasks(s []Task) { //Вывод задач
 
 	for _, v := range s {
 		fmt.Println("ID:", v.ID)
 		fmt.Println(v.Title)
+		fmt.Println(v.Description)
 		if v.Completed == true {
 			fmt.Println("Статус: Выполнено")
 		} else {
 			fmt.Println("Статус: Не выполнено")
 		}
+		fmt.Println(v.CreatedAt.Format("2006-01-02 15:04:05"))
+		GetDeadlineStatus(v.DeadLine)
 	}
 
 }
 
-func Add(str string, s *[]Task) {
+func Add(str, des string, prio int, tm time.Time, s *[]Task) { //Создание задачи
 	var l int
 	l = len(*s)
+	var p string
+	switch {
+	case prio == 1:
+		p = "High"
+	case prio == 2:
+		p = "Medium"
+	case prio == 3:
+		p = "Low"
+	default:
+		fmt.Println("Incorrect priority")
+		return
+	}
 	var t = Task{
-		ID:        l + 1,
-		Title:     str,
-		Completed: false,
+		ID:          l + 1,
+		Title:       str,
+		Completed:   false,
+		CreatedAt:   time.Now(),
+		Description: des,
+		Priority:    p,
+		DeadLine:    tm,
 	}
 	*s = append(*s, t)
-	fmt.Print(t)
+	fmt.Println(t)
 }
 
-func Done(id int, s []Task) (error, bool) {
+func Done(id int, s []Task) (error, bool) { //Смена статуса на Выполнено
 	found := false
 	for i, v := range s {
 		if v.ID == id {
@@ -59,7 +88,7 @@ func Done(id int, s []Task) (error, bool) {
 	}
 }
 
-func Delete(id int, s *[]Task) (error, bool) {
+func Delete(id int, s *[]Task) (error, bool) { //Удаление задачи
 	found := false
 	for i, v := range *s {
 		if v.ID == id {
@@ -74,5 +103,105 @@ func Delete(id int, s *[]Task) (error, bool) {
 		err := errors.New("Invalid ID")
 		fmt.Println("Error:", err)
 		return err, found
+	}
+}
+
+func ShowMenu() { //Отображение меню
+	fmt.Println("Выберите команду")
+	fmt.Println("1. Показать задачу")
+	fmt.Println("2. Добавить задачу")
+	fmt.Println("3. Изменить статус")
+	fmt.Println("4. Удалить задачу")
+	fmt.Println("5. Найти задачу")
+	fmt.Println("6. Отсортировать")
+	fmt.Println("7. Выйти")
+	fmt.Println("Введите команду")
+}
+
+func TaskSearch(str string, s []Task) { // Поиск задачи по имени
+	for _, v := range s {
+		if strings.Contains(v.Title, str) {
+			fmt.Println(v.Title)
+		} else {
+			err := errors.New("String doesn't found")
+			fmt.Println("Error:", err)
+		}
+	}
+}
+
+func MenuProcessing(s string, t *[]Task) bool { //Обработка команд
+	end := false
+	var name, descript string
+
+	var timeInput string
+	scanner := bufio.NewScanner(os.Stdin)
+	switch {
+	case s == "1":
+		ListTasks(*t)
+	case s == "2":
+		fmt.Println("Введите название задачи")
+		scanner.Scan()
+		name = scanner.Text()
+		//fmt.Scan(&name)
+		fmt.Println("Введите описание задачи")
+		scanner.Scan()
+		descript = scanner.Text()
+		//fmt.Scan(&descript)
+		fmt.Println("Выберите приоритет")
+		fmt.Println("1.High 2. Medium 3. Low")
+		scanner.Scan()
+		prio, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			fmt.Println("Нужно ввести число")
+			return false
+		}
+		//fmt.Scan(&prio)
+		fmt.Println("Укажите дэдлайн")
+		scanner.Scan()
+		timeInput = scanner.Text()
+		tm, err := time.Parse("2006-01-02 15:04:05", timeInput)
+		if err != nil {
+			fmt.Println("Incorrect time format")
+		}
+		Add(name, descript, prio, tm, t)
+	case s == "3":
+		var id int
+		fmt.Println("Введите ID")
+		fmt.Scan(&id)
+		Done(id, *t)
+	case s == "4":
+		var id int
+		fmt.Println("Введите ID")
+		fmt.Scan(&id)
+		Delete(id, t)
+	case s == "5":
+		var str string
+		fmt.Println("Введите строку")
+		fmt.Scan(&str)
+		TaskSearch(str, *t)
+	case s == "6":
+		TaskSort(*t)
+	case s == "7":
+		end = true
+	}
+	return end
+}
+
+func TaskSort(s []Task) { // Сортировка задач по ID
+	sort.Slice(s, func(i, j int) bool {
+		return s[i].ID < s[j].ID
+	})
+	fmt.Println(s)
+}
+
+func GetDeadlineStatus(tm time.Time) { //получение статуса дэдлайна
+	tmNow := time.Now()
+	switch {
+	case tm.Before(tmNow):
+		fmt.Println("Deadline status if overdue")
+	case tm.After(tmNow):
+		fmt.Println("Deadline status is upcoming")
+	case tm.Equal(tmNow.Add(time.Hour)):
+		fmt.Println("The deadline is in an hour")
 	}
 }
