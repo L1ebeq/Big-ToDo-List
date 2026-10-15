@@ -19,6 +19,7 @@ type Task struct {
 	Priority    string
 	CreatedAt   time.Time
 	DeadLine    time.Time
+	Tags        []string
 }
 
 func AddOneTaks(a Task, b *[]Task) {
@@ -119,12 +120,19 @@ func ShowMenu() { //Отображение меню
 }
 
 func TaskSearch(str string, s []Task) { // Поиск задачи по имени
+	found := false
 	for _, v := range s {
-		if strings.Contains(v.Title, str) {
-			fmt.Println(v.Title)
+		if strings.Contains(strings.ToLower(v.Title), strings.ToLower(str)) {
+			fmt.Println(v.Title, v.Description)
+			found = true
 		} else {
-			err := errors.New("String doesn't found")
-			fmt.Println("Error:", err)
+			if strings.Contains(strings.ToLower(v.Description), strings.ToLower(str)) {
+				fmt.Println(v.Title, v.Description)
+				found = true
+			}
+		}
+		if found != true {
+			fmt.Println("String doesn't found")
 		}
 	}
 }
