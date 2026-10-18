@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -12,14 +11,14 @@ import (
 )
 
 type Task struct {
-	ID          int
-	Title       string
-	Completed   bool
-	Description string
-	Priority    string
-	CreatedAt   time.Time
-	DeadLine    time.Time
-	Tags        []string
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Completed   bool      `json:"completed"`
+	Description string    `json:"description"`
+	Priority    string    `json:"priority"`
+	CreatedAt   time.Time `json:"created_at"`
+	DeadLine    time.Time `json:"dead_line"`
+	Tags        []string  `json:"tags"`
 }
 
 func AddOneTaks(a Task, b *[]Task) {
@@ -131,18 +130,16 @@ func TaskSearch(str string, s []Task) { // Поиск задачи по имен
 				found = true
 			}
 		}
-		if found != true {
-			fmt.Println("String doesn't found")
-		}
+	}
+	if found != true {
+		fmt.Println("String doesn't found")
 	}
 }
 
-func MenuProcessing(s string, t *[]Task) bool { //Обработка команд
+func MenuProcessing(s string, t *[]Task, scanner *bufio.Scanner) bool { //Обработка команд
 	end := false
 	var name, descript string
-
 	var timeInput string
-	scanner := bufio.NewScanner(os.Stdin)
 	switch {
 	case s == "1":
 		ListTasks(*t)
@@ -150,11 +147,9 @@ func MenuProcessing(s string, t *[]Task) bool { //Обработка коман�
 		fmt.Println("Введите название задачи")
 		scanner.Scan()
 		name = scanner.Text()
-		//fmt.Scan(&name)
 		fmt.Println("Введите описание задачи")
 		scanner.Scan()
 		descript = scanner.Text()
-		//fmt.Scan(&descript)
 		fmt.Println("Выберите приоритет")
 		fmt.Println("1.High 2. Medium 3. Low")
 		scanner.Scan()
@@ -163,7 +158,6 @@ func MenuProcessing(s string, t *[]Task) bool { //Обработка коман�
 			fmt.Println("Нужно ввести число")
 			return false
 		}
-		//fmt.Scan(&prio)
 		fmt.Println("Укажите дэдлайн")
 		scanner.Scan()
 		timeInput = scanner.Text()
@@ -173,19 +167,26 @@ func MenuProcessing(s string, t *[]Task) bool { //Обработка коман�
 		}
 		Add(name, descript, prio, tm, t)
 	case s == "3":
-		var id int
 		fmt.Println("Введите ID")
-		fmt.Scan(&id)
+		scanner.Scan()
+		id, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			fmt.Println("ID not found")
+		}
 		Done(id, *t)
 	case s == "4":
-		var id int
 		fmt.Println("Введите ID")
-		fmt.Scan(&id)
+		scanner.Scan()
+		id, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			fmt.Println("ID not found")
+		}
 		Delete(id, t)
 	case s == "5":
 		var str string
 		fmt.Println("Введите строку")
-		fmt.Scan(&str)
+		scanner.Scan()
+		str = scanner.Text()
 		TaskSearch(str, *t)
 	case s == "6":
 		TaskSort(*t)
