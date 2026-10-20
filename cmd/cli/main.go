@@ -10,21 +10,19 @@ import (
 )
 
 func main() {
-	//models.AddOneTaks(variables.Task1, &variables.TasksSlice)
-	//models.AddOneTaks(variables.Task2, &variables.TasksSlice)
 	fileName := "jsonFile"
-	file, err := os.Create(fileName)
+	_, err := os.Create(fileName)
 	if err != nil {
 		fmt.Println("File creation error")
+		return
 	}
-	storage.SaveData(file, variables.TasksSlice)
+	storage.SaveData(fileName, variables.TasksSlice)
+	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		models.ShowMenu()
 		var s string
-		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
 		s = scanner.Text()
-		//fmt.Scan(&s)
 		end := models.MenuProcessing(s, &variables.TasksSlice, scanner)
 		if end {
 			return

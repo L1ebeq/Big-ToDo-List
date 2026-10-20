@@ -2,29 +2,42 @@ package storage
 
 import (
 	"encoding/json"
-	"fmt"
+	"io"
 	"os"
 	"task-manager/internal/models"
 )
 
-func SaveData(file *os.File, s []models.Task) { //Запись данных в файл
-	os.Open(file.Name())
+func SaveData(path string, s []models.Task) error { //Запись данных в файл
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 	data, err := json.Marshal(s)
 	if err != nil {
-		fmt.Println("Data marshal error")
+		return err
 	}
-	file.Write(data)
-	defer file.Close()
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func ReadData(file *os.File) *[]models.Task { //Чтение данных из файла
-	os.Open(file.Name())
-	var data []byte
-	var s *[]models.Task
-	_, err := file.Read(data)
+func ReadData(path string) ([]models.Task, error) { //Чтение данных из файла
+	file, err := os.Open(path)
 	if err != nil {
-		fmt.Println("Read file error")
+		return nil, err
 	}
-	json.Unmarshal(data, s)
-	return s
+	defer file.Close()
+	var s []models.Task
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &s)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
 }
