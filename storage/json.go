@@ -7,7 +7,7 @@ import (
 	"task-manager/internal/models"
 )
 
-func SaveData(file *os.File, s []models.Task) {
+func SaveData(file *os.File, s []models.Task) { //Запись данных в файл
 	os.Open(file.Name())
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -17,7 +17,7 @@ func SaveData(file *os.File, s []models.Task) {
 	defer file.Close()
 }
 
-func ReadData(file *os.File) *[]models.Task {
+func ReadData(file *os.File) *[]models.Task { //Чтение данных из файла
 	os.Open(file.Name())
 	var data []byte
 	var s *[]models.Task
