@@ -10,12 +10,16 @@ import (
 )
 
 func main() {
-	fileName := "jsonFile"
-	_, err := os.Create(fileName)
+	fileName := "data.json"
+	tasks, err := storage.ReadData(fileName)
 	if err != nil {
-		fmt.Println("File creation error")
-		return
+		if os.IsNotExist(err) {
+			tasks = []models.Task{}
+		}
+	} else {
+		fmt.Println("Read file error")
 	}
+	variables.TasksSlice = tasks
 	storage.SaveData(fileName, variables.TasksSlice)
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
