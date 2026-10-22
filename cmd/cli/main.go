@@ -15,22 +15,23 @@ func main() {
 	if err != nil {
 		if os.IsNotExist(err) {
 			tasks = []models.Task{}
+		} else {
+			fmt.Println("Read file error")
 		}
-	} else {
-		fmt.Println("Read file error")
+
 	}
 	variables.TasksSlice = tasks
-	storage.SaveData(fileName, variables.TasksSlice)
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		models.ShowMenu()
-		var s string
 		scanner.Scan()
-		s = scanner.Text()
+		s := scanner.Text()
 		end := models.MenuProcessing(s, &variables.TasksSlice, scanner)
 		if end {
+			if err := storage.SaveData(fileName, variables.TasksSlice); err != nil {
+				fmt.Println("Save data error", err)
+			}
 			return
 		}
 	}
-
 }

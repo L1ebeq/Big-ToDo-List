@@ -8,7 +8,7 @@ import (
 )
 
 func SaveData(path string, s []models.Task) error { //Запись данных в файл
-	file, err := os.Open(path)
+	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
